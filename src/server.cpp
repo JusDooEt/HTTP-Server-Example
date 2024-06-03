@@ -7,6 +7,26 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <netdb.h>
+#include <vector>
+#include <sstream>
+
+
+std::vector<std::string> split_message(const std::string& message, const std::string& delim) {
+    std::vector<std::string> toks;
+    std::stringstream ss = std::stringstream{ message };
+    std::string line;
+    while (getline(ss, line, *delim.begin())) {
+        toks.push_back(line);
+        ss.ignore(delim.length() - 1);
+    }
+    return toks;
+}
+std::string get_path(std::string request) {
+    std::vector<std::string> toks = split_message(request, "\r\n");
+    std::vector<std::string> path_toks = split_message(toks[0], " ");
+    return path_toks[1];
+}
 
 int main(int argc, char **argv) {
   // Flush after every std::cout / std::cerr
@@ -60,33 +80,34 @@ int main(int argc, char **argv) {
    //send(client, message.c_str(), message.length(), 0);
    std::cout << "Client connected\n";
   
-   std::string client_message(1024, '\0');
+   char buffer[1024];
+   int ret = read(client_fd, buffer, sizeof(buffer));
+   if (ret < 0) {
+       std::cerr << "Error in reading from client socket" << std::endl;
+   }
+   else if (ret == 0) {
+       std::cout << "No bytes read" << std::endl;
+   }
+   else {
+       std::string request(buffer);
+       std::cout << "Request: " << request << std::endl;
+       std::string path = get_path(request);
+       std::vector<std::string> split_paths = split_message(path, "/");
+       std::string response;
+       if (path == "/") {
+           response = "HTTP/1.1 200 OK\r\n\r\n";
+       }
+       else if (split_paths[1] == "echo") {
+           response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + std::to_string(split_paths[2].length()) + "\r\n\r\n" + split_paths[2];
+       }
+       else {
+           response = "HTTP/1.1 404 Not Found\r\n\r\n";
+       }
 
-   ssize_t brecvd = recv(client_fd, (void*)&client_message[0], client_message.max_size(), 0);
-   if (brecvd < 0)
-   {
-       std::cerr << "error receiving message from client\n";
-       close(client_fd);
-       close(server_fd);
-       return 1;
+       std::cout << "Response: " << response << std::endl;
+       write(client_fd, response.c_str(), response.length());
    }
 
-   std::cerr << "Client Message (length: " << client_message.size() << ")" << std::endl;
-   std::clog << client_message << std::endl;
-   std::string response = client_message.starts_with("GET / HTTP/1.1\r\n") ? "HTTP/1.1 200 OK\r\n\r\n" : "HTTP/1.1 404 Not Found\r\n\r\n";
-
-   ssize_t bsent = send(client_fd, response.c_str(), response.size(), 0);
-
-   if (bsent < 0)
-   {
-       std::cerr << "error sending response to client\n";
-       close(client_fd);
-       close(server_fd);
-       return 1;
-   }
-   close(client_fd);
    close(server_fd);
- 
-
-  return 0;
+   return 0;
 }
