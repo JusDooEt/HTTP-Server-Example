@@ -34,8 +34,8 @@ std::vector<std::string> get_headers(const std::string& request) {
     std::cout << "\nHeaders:\n";
     for (int i = 1; *toks[i].begin() != 'A'; i++)
     {
-        std::cout << toks[i] << std::endl;
         headers.push_back(toks[i]);
+        std::cout << headers.back() << std::endl;
     }
     return headers;
 }
