@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
        std::vector<std::string> split_paths = split_message(path, "/");
 
        // Creating a vector of headers and their data
-       std::vector<std::string> split_paths = get_headers(request);
+       std::vector<std::string> headers = get_headers(request);
 
        std::string response;
        if (path == "/") {
