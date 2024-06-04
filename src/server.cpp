@@ -133,6 +133,10 @@ int main(int argc, char** argv) {
             http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"; // Return 200 for root path
         }
         else if (request.path.substr(0, 6) == "/echo/") {
+            if (request.headers["Accept-Encoding"] == "gzip") {
+                http_response = "HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/plain\r\n";
+                http_response += "Content-Length: " + std::to_string(responsePath.length()) + "\r\n\r\n" + responsePath;
+            }
             http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n";
             http_response += "Content-Length: " + std::to_string(responsePath.length()) + "\r\n\r\n" + responsePath;
         }
