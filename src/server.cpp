@@ -1,79 +1,104 @@
-#include <iostream>
-#include <cstdlib>
-#include <string>
-#include <cstring>
-#include <unistd.h>
-#include <sys/types.h>
-#include <vector>
-#include <sstream>
-#include <unordered_map>
+#include "server.hpp"
 #include <fstream>
-#ifdef __WIN32__
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdio.h>
-#pragma comment(lib, "Ws2_32.lib")
-#else
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#endif
-struct HttpRequest {
-    std::string method;
-    std::string path;
-    std::string version;
-    std::unordered_map<std::string, std::string> headers;
-    std::string body;
-};
-HttpRequest parseHttpRequest(const std::string request) {
-    HttpRequest httpRequest;
-    std::istringstream requestStream(request);
-    std::string line;
-    std::getline(requestStream, line);
-    std::istringstream lineStream(line);
-    lineStream >> httpRequest.method >> httpRequest.path >> httpRequest.version;
-    // Parse headers
-    while (std::getline(requestStream, line) && line != "\r") {
-        auto colonPos = line.find(':');
-        if (colonPos != std::string::npos) {
-            std::string headerName = line.substr(0, colonPos);
-            std::string headerValue = line.substr(colonPos + 2); // Skip the colon and space
-            httpRequest.headers[headerName] = headerValue;
+#include <thread>
+#include <regex>
+#include <zlib.h>
+void handle_request(int client, const std::string directory) {
+    std::string request(1024, '\0');
+    recv(client, &request[0], request.length(), 0);
+    Request req(request);
+    Response response;
+    if (req.line.method == "GET")
+    {
+        if (req.line.target.size() == 1 && req.line.target == "/")
+        {
+            response.line.set_status_code(200);
+        }
+        else if (req.line.target.size() >= 6 && req.line.target.substr(0, 6) == "/echo/")
+        {
+            response.line.set_status_code(200);
+            response.headers.add_update_header("Content-Type", "text/plain");
+            response.body = req.line.target.substr(6);
+            auto it = req.header.headers.find("Accept-Encoding");
+            if (it != req.header.headers.end()) {
+                // Check if "gzip" is present in "Accept-Encoding"
+                if (std::regex_search(it->second, std::regex("gzip"))) {
+                    // Update the response header
+                    response.headers.add_update_header("Content-Encoding", "gzip");
+                    std::cout << "Updated Content-Encoding to gzip" << std::endl;
+                }
+            }
+            response.body = req.line.target.substr(6);
+            response.headers.add_update_header("Content-Length", std::to_string(response.body.size()));
+        }
+        else if (req.line.target == "/user-agent")
+        {
+            response.line.set_status_code(200);
+            response.headers.add_update_header("Content-Type", "text/plain");
+            response.body = req.header.headers.at("User-Agent");
+            response.headers.add_update_header("Content-Length", std::to_string(response.body.size()));
+        }
+        else if (req.line.target.size() >= 6 && req.line.target.substr(0, 7) == "/files/")
+        {
+            std::ifstream file(directory + req.line.target.substr(7));
+            if (file.is_open())
+            {
+                response.line.set_status_code(200);
+                response.headers.add_update_header("Content-Type", "application/octet-stream");
+                response.body.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+                response.headers.add_update_header("Content-Length", std::to_string(response.body.size()));
+            }
+            else
+            {
+                response.line.set_status_code(404);
+            }
+        }
+        else {
+            response.line.set_status_code(404);
         }
     }
-    // Parse body (if any)
-    while (std::getline(requestStream, line)) {
-        httpRequest.body += line;
-    }
-    return httpRequest;
-}
-std::string extractEchoString(const std::string& path)
-{
-    const std::string echoPrefix = "/echo/";
-    auto startPos = path.find(echoPrefix);
-    if (startPos != std::string::npos)
+    else if (req.line.method == "POST")
     {
-        return path.substr(startPos + echoPrefix.size());
+        if (req.line.target.size() >= 6 && req.line.target.substr(0, 7) == "/files/")
+        {
+            std::ofstream file(directory + req.line.target.substr(7));
+            if (file.is_open())
+            {
+                response.line.set_status_code(201);
+                file.write(req.body.c_str(), std::stoi(req.header.headers.at("Content-Length")));
+            }
+            else
+            {
+                response.line.set_status_code(404);
+            }
+        }
     }
-    return std::string(); // Return an empty string
+    const char* resp = response.c_str();
+    send(client, resp, strlen(resp), 0);
+    close(client);
+    return;
 }
 int main(int argc, char** argv) {
+    auto args = arg_parser(argc, argv);
+    std::string directory = "";
+    if (args.find("directory") != args.end())
+    {
+        directory = args.at("directory");
+        std::cout << "Directory initialized at " << directory << std::endl;
+    }
+    else
+    {
+        directory = ".\\";
+        std::cout << "Directory initialized to current source" << std::endl;
+    }
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     std::cout << "Logs from your program will appear here!\n";
-    std::string dir;
-    if (argc == 3 && strcmp(argv[1], "--directory") == 0)
-    {
-        dir = argv[2];
-    }
-
     // Uncomment this block to pass the first stage
-    //
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0) {
         std::cerr << "Failed to create server socket\n";
         return 1;
     }
-
     // Since the tester restarts your program quite often, setting REUSE_PORT
     // ensures that we don't run into 'Address already in use' errors
     int reuse = 1;
@@ -81,90 +106,29 @@ int main(int argc, char** argv) {
         std::cerr << "setsockopt failed\n";
         return 1;
     }
-
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(4221);
-
     if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) != 0) {
         std::cerr << "Failed to bind to port 4221\n";
         return 1;
     }
-
     int connection_backlog = 5;
     if (listen(server_fd, connection_backlog) != 0) {
         std::cerr << "listen failed\n";
         return 1;
     }
-
-    struct sockaddr_in client_addr;
-    int client_addr_len = sizeof(client_addr);
-
     std::cout << "Waiting for a client to connect...\n";
-    while (true) {
-        int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, (socklen_t*)&client_addr_len);
-        std::cout << "Client connected\n";
-        char buffer[1024] = { 0 };
-        ssize_t bytes_received = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
-        if (bytes_received < 0) {
-            std::cerr << "Failed to receive data\n";
-            close(client_fd);
-            close(server_fd);
-            return 1;
-        }
-        buffer[bytes_received] = '\0';
-        HttpRequest request = parseHttpRequest(std::string(buffer));
-        std::string responsePath = extractEchoString(request.path);
-        std::string http_response;
-        if (request.method == "POST" && request.path.substr(0, 7) == "/files/") {
-            std::string fileName = request.path.substr(7);
-            std::ofstream outfile(dir + fileName);
-            outfile << request.body;
-            outfile.close();
-            http_response = "HTTP/1.1 201 Created\r\n\r\n";
-        }
-        else if (request.path == "/user-agent") {
-            std::string userAgent = request.headers["User-Agent"];
-            http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n";
-            http_response += "Content-Length: " + std::to_string(userAgent.length() - 1) + "\r\n\r\n" + userAgent;
-        }
-        else if (request.path == "/") {
-            http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"; // Return 200 for root path
-        }
-        else if (request.path.substr(0, 6) == "/echo/") {
-            if (request.headers["Accept-Encoding"] == "gzip") {
-                http_response = "HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/plain\r\n";
-                http_response += "Content-Length: " + std::to_string(responsePath.length()) + "\r\n\r\n" + responsePath;
-            }
-            else {
-                http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n";
-                http_response += "Content-Length: " + std::to_string(responsePath.length()) + "\r\n\r\n" + responsePath;
-            }
-        }
-        else if (request.path.substr(0, 7) == "/files/") {
-            std::string fileName = request.path.substr(7);
-            std::ifstream ifs(dir + fileName);
-            if (ifs.good()) {
-                std::stringstream content;
-                content << ifs.rdbuf();
-                std::stringstream respond("");
-                http_response = "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: " + std::to_string(content.str().length()) + "\r\n\r\n" + content.str() + "\r\n";
-            }
-            else {
-                http_response = "HTTP/1.1 404 Not Found\r\n\r\n";
-            }
-        }
-        else {
-            http_response = "HTTP/1.1 404 Not Found\r\n\r\n";
-        }
-
-        send(client_fd, http_response.c_str(), http_response.size(), 0);
-        std::cout << "Reponse: " << http_response;
+    while (true)
+    {
+        struct sockaddr_in client_addr;
+        int client_addr_len = sizeof(client_addr);
+        int client = accept(server_fd, (struct sockaddr*)&client_addr, (socklen_t*)&client_addr_len);
+        std::thread client_req(handle_request, client, directory);
+        client_req.detach();
+        //handle_request(client, directory);
     }
-
-   
-
     close(server_fd);
     return 0;
 }
