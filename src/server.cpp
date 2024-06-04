@@ -43,7 +43,7 @@ HttpRequest parseHttpRequest(const std::string request) {
     }
     // Parse body (if any)
     while (std::getline(requestStream, line)) {
-        httpRequest.body += line + "\n";
+        httpRequest.body += line;
     }
     return httpRequest;
 }
@@ -117,7 +117,14 @@ int main(int argc, char** argv) {
         HttpRequest request = parseHttpRequest(std::string(buffer));
         std::string responsePath = extractEchoString(request.path);
         std::string http_response;
-        if (request.path == "/user-agent") {
+        if (request.method == "POST" && request.path.substr(0, 7) == "/files/") {
+            std::string fileName = request.path.substr(7);
+            std::ofstream outfile(dir + fileName);
+            outfile << request.body;
+            outfile.close();
+            http_response = "HTTP/1.1 201 Created\r\n\r\n";
+        }
+        else if (request.path == "/user-agent") {
             std::string userAgent = request.headers["User-Agent"];
             http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n";
             http_response += "Content-Length: " + std::to_string(userAgent.length() - 1) + "\r\n\r\n" + userAgent;
