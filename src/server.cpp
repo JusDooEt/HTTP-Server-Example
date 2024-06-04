@@ -180,7 +180,8 @@ std::optional<ServerResponse> provide_response(const ClientRequest& req, std::st
             char header_sep = ' ';
             std::vector<std::string> encoding_headers = split(req.getHeader("Accept-Encoding"), header_sep);
             for (const auto& value : encoding_headers) {
-                if (value == " gzip") {
+                std::cout << "Value: " << value << std::endl;
+                if (value == "gzip") {
                     resp.setHeader("Content-Encoding", "gzip");
                 }
             }
