@@ -169,11 +169,11 @@ std::vector<std::string> splitEncoding(const std::string& s, char delimiter) {
         if (!token.empty()) {
             if (isspace(token[0]))
             {
-                std::cout << "Token = " << token.substr(1) << std::endl;
+                //std::cout << "Token = " << token.substr(1) << std::endl;
                 tokens.push_back(token.substr(1));
             }
             else {
-                std::cout << "Token = " << token << std::endl;
+                //std::cout << "Token = " << token << std::endl;
                 tokens.push_back(token);
             }
         }
@@ -199,7 +199,7 @@ std::optional<ServerResponse> provide_response(const ClientRequest& req, std::st
             char header_sep = ',';
             std::vector<std::string> encoding_headers = splitEncoding(req.getHeader("Accept-Encoding"), header_sep);
             for (const auto& value : encoding_headers) {
-                std::cout << "Value: " << value << std::endl;
+                //std::cout << "Value: " << value << std::endl;
                 if (value == "gzip") {
                     resp.setHeader("Content-Encoding", "gzip");
                 }
