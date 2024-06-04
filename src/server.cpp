@@ -30,7 +30,7 @@ std::string get_path(std::string request) {
 
 std::vector<std::string> get_headers(const std::string& request) {
     std::vector<std::string> toks = split_message(request, "\r\n");
-    std::vector<std::string> path_toks = split_message(toks[1], "\r\n");
+    std::vector<std::string> path_toks = split_message(toks[1], "*/");
     for (const auto& header : path_toks)
     {
         std::cout << "\nHeaders:\n";
