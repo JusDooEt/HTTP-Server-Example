@@ -177,7 +177,7 @@ std::optional<ServerResponse> provide_response(const ClientRequest& req, std::st
         resp.setHeader("Content-Length", std::to_string(echo_arg.length()));
         resp.setBody(echo_arg);
         if (req.containsHeader("Accept-Encoding")) {
-            char header_sep = ' ';
+            char header_sep = ',';
             std::vector<std::string> encoding_headers = split(req.getHeader("Accept-Encoding"), header_sep);
             for (const auto& value : encoding_headers) {
                 std::cout << "Value: " << value << std::endl;
