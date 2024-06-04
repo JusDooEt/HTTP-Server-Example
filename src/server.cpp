@@ -43,7 +43,7 @@ std::vector<std::string> get_headers(const std::string& request) {
 bool get_user_agent(std::vector<std::string> headers, std::string& user_agent) {
     std::string key = "User-Agent: ";
     for (const auto& header : headers) {
-        std::cout << "header.substr(0, key.length(): " << header.substr(0, key.length() << std::endl;
+        std::cout << "header.substr(0, key.length(): " << header.substr(0, key.length()) << std::endl;
         if (header.substr(0, key.length()) == key)
         {
             user_agent = header.substr(key.length());
