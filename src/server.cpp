@@ -11,15 +11,6 @@
 #include <vector>
 #include <sstream>
 
-std::vector<std::string> get_headers(const std::string& request, const std::string& header) {
-    std::vector<std::string> toks = split_message(request, "\r\n");
-    std::vector<std::string> path_toks = split_message(toks[1], " ");
-    for (const auto& header : toks)
-    {
-        cout << header << std::endl;
-    }
-    return path_toks;
-}
 std::vector<std::string> split_message(const std::string& message, const std::string& delim) {
     std::vector<std::string> toks;
     std::stringstream ss = std::stringstream{ message };
@@ -30,10 +21,21 @@ std::vector<std::string> split_message(const std::string& message, const std::st
     }
     return toks;
 }
+
 std::string get_path(std::string request) {
     std::vector<std::string> toks = split_message(request, "\r\n");
     std::vector<std::string> path_toks = split_message(toks[0], " ");
     return path_toks[1];
+}
+
+std::vector<std::string> get_headers(const std::string& request, const std::string& header) {
+    std::vector<std::string> toks = split_message(request, "\r\n");
+    std::vector<std::string> path_toks = split_message(toks[1], " ");
+    for (const auto& header : toks)
+    {
+        cout << header << std::endl;
+    }
+    return path_toks;
 }
 
 int main(int argc, char **argv) {
