@@ -122,6 +122,7 @@ int main(int argc, char **argv) {
        std::string user_agent;
        // Creating a vector of headers and their data
        std::vector<std::string> headers = get_headers(request);
+       bool test = get_user_agent(headers, user_agent);
 
        std::string response;
        if (path == "/") {
