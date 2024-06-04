@@ -16,16 +16,26 @@
 #include <unordered_map>
 #include <fstream>
 #include <filesystem>
+
+
+
 const std::string STATUSLINE_OK{ "HTTP/1.1 200 OK" };
 const std::string STATUSLINE_NOT_FOUND{ "HTTP/1.1 404 Not Found" };
 const std::string STATUSLINE_201{ "HTTP/1.1 201 Created" };
 const std::string CRLF = "\r\n";
+const std::vector<std::string> ENCODING{ "gzip" };
 bool server_running = true;
+
+
+
 struct HandleClientArgs {
     std::string directory;
     int client_socket;
     sockaddr_in client_addr;
 };
+
+
+
 struct ClientRequest {
     enum Method {
         GET,
@@ -62,6 +72,9 @@ struct ClientRequest {
         return method == POST;
     }
 };
+
+
+
 class ServerResponse {
 private:
     std::string status_line_;
@@ -108,6 +121,9 @@ public:
         send(socket, (const void*)msg_buf, strlen(msg_buf), 0);
     }
 };
+
+
+
 void log_sockaddr(const sockaddr_in& addr) {
     std::cout << "Client Address family: " << addr.sin_family << std::endl;
     std::cout << "Client IP Adress: " << inet_ntoa(addr.sin_addr) << std::endl;
@@ -116,6 +132,9 @@ void log_sockaddr(const sockaddr_in& addr) {
     std::cout << "Client Port Number w/o htons : " << addr.sin_port <<
         std::hex << " | 0x" << addr.sin_port << std::dec << std::endl;
 }
+
+
+
 std::unordered_map<std::string, std::string> parse_args(int argc, char* argv[]) {
     std::unordered_map<std::string, std::string> res{};
     for (int i = 1; i < argc; ++i) {
@@ -127,6 +146,9 @@ std::unordered_map<std::string, std::string> parse_args(int argc, char* argv[]) 
     }
     return res;
 }
+
+
+
 std::vector<std::string> split(const std::string& s, char delimiter) {
     std::vector<std::string> tokens;
     std::istringstream iss{ s };
@@ -138,6 +160,9 @@ std::vector<std::string> split(const std::string& s, char delimiter) {
     }
     return tokens;
 }
+
+
+
 std::optional<ServerResponse> provide_response(const ClientRequest& req, std::string directory) {
     char path_sep = '/';
     ServerResponse resp{};
@@ -151,8 +176,14 @@ std::optional<ServerResponse> provide_response(const ClientRequest& req, std::st
         resp.setHeader("Content-Type", "text/plain");
         resp.setHeader("Content-Length", std::to_string(echo_arg.length()));
         resp.setBody(echo_arg);
-        if (req.containsHeader("Accept-Encoding") && req.getHeader("Accept-Encoding") == "gzip") {
-            resp.setHeader("Content-Encoding", "gzip");
+        if (req.containsHeader("Accept-Encoding")) {
+            char header_sep = ' ';
+            std::vector<std::string> encoding_headers = split(req.getHeader("Accept-Encoding"), header_sep);
+            for (const auto& value : encoding_headers) {
+                if (value == "gzip") {
+                    resp.setHeader("Content-Encoding", "gzip");
+                }
+            }
         }
     }
     else if (path_segments.size() == 1 && path_segments[0] == "user-agent") {
@@ -196,6 +227,9 @@ std::optional<ServerResponse> provide_response(const ClientRequest& req, std::st
     std::cout << resp.formattedResponse() << std::endl;
     return resp;
 }
+
+
+
 std::optional<ClientRequest> parse_message(std::string_view complete_message) {
     ClientRequest req{};
     if (complete_message.empty()) {
@@ -245,6 +279,9 @@ std::optional<ClientRequest> parse_message(std::string_view complete_message) {
     req.content = rem_message.substr(CRLF.length());
     return req;
 }
+
+
+
 void handle_client(const HandleClientArgs& args) {
     // Does everything that needs to be done when a client is accepted
     std::string directory = args.directory;
@@ -282,6 +319,9 @@ void handle_client(const HandleClientArgs& args) {
     // Close Connection
     close(client_socket);
 }
+
+
+
 int main(int argc, char** argv) {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     std::cout << "Logs from your program will appear here!\n";
