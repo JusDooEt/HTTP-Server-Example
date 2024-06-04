@@ -6,9 +6,6 @@
 #include <cstring>
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netdb.h>
 #include <vector>
 #include <map>
 #include <cstdio>
@@ -18,7 +15,16 @@
 #include <filesystem>
 #include <zlib.h>
 
-
+#ifdef __WIN32__
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <stdio.h>
+#pragma comment(lib, "Ws2_32.lib")
+#else
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#endif
 
 
 const std::string STATUSLINE_OK{ "HTTP/1.1 200 OK" };
