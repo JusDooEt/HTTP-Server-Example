@@ -29,12 +29,13 @@ std::string get_path(std::string request) {
 }
 
 std::vector<std::string> get_headers(const std::string& request) {
+    std::vector<std::string> headers;
     std::vector<std::string> toks = split_message(request, "\r\n");
-    std::vector<std::string> path_toks = split_message(toks[1], "*/");
-    for (const auto& header : path_toks)
+    for (int i = 1; toks[i].begin() != 'A'; i++)
     {
         std::cout << "\nHeaders:\n";
-        std::cout << header << std::endl;
+        std::cout << toks[i] << std::endl;
+        headers.push_back(toks[i]);
     }
     return path_toks;
 }
