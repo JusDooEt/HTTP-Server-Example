@@ -161,6 +161,25 @@ std::vector<std::string> split(const std::string& s, char delimiter) {
     return tokens;
 }
 
+std::vector<std::string> splitEncoding(const std::string& s, char delimiter) {
+    std::vector<std::string> tokens;
+    std::istringstream iss{ s };
+    std::string token;
+    while (std::getline(iss, token, delimiter)) {
+        if (!token.empty()) {
+            if (isspace(token[0]))
+            {
+                std::cout << "Token = " << token.substr(1) << std::endl;
+                tokens.push_back(token.substr(1));
+            }
+            else {
+                std::cout << "Token = " << token << std::endl;
+                tokens.push_back(token);
+            }
+        }
+    }
+    return tokens;
+}
 
 
 std::optional<ServerResponse> provide_response(const ClientRequest& req, std::string directory) {
@@ -178,7 +197,7 @@ std::optional<ServerResponse> provide_response(const ClientRequest& req, std::st
         resp.setBody(echo_arg);
         if (req.containsHeader("Accept-Encoding")) {
             char header_sep = ',';
-            std::vector<std::string> encoding_headers = split(req.getHeader("Accept-Encoding"), header_sep);
+            std::vector<std::string> encoding_headers = splitEncoding(req.getHeader("Accept-Encoding"), header_sep);
             for (const auto& value : encoding_headers) {
                 std::cout << "Value: " << value << std::endl;
                 if (value == "gzip") {
