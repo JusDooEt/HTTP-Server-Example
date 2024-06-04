@@ -37,7 +37,7 @@ std::vector<std::string> get_headers(const std::string& request) {
         std::cout << toks[i] << std::endl;
         headers.push_back(toks[i]);
     }
-    return path_toks;
+    return headers;
 }
 
 int main(int argc, char **argv) {
