@@ -124,9 +124,9 @@ int main(int argc, char **argv) {
        else if (split_paths[1] == "echo") {
            response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + std::to_string(split_paths[2].length()) + "\r\n\r\n" + split_paths[2];
        }
-       else if (get_user_agent(headers, user_agent)) {
+       /*else if (get_user_agent(headers, user_agent)) {
            response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + std::to_string(user_agent.length()) + "\r\n\r\n" + user_agent;
-       }
+       }*/
        else {
            response = "HTTP/1.1 404 Not Found\r\n\r\n";
        }
