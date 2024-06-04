@@ -40,7 +40,7 @@ std::vector<std::string> get_headers(const std::string& request) {
     return headers;
 }
 
-std::bool get_user_agent(std::vector<std::string>& headers, std::string& user_agent) {
+bool get_user_agent(std::vector<std::string>& headers, std::string& user_agent) {
     std::string key = "User-Agent: ";
     std::cout << "Headers Size = " << headers.size() << std::endl;
     return false;
@@ -114,7 +114,8 @@ int main(int argc, char **argv) {
        std::string user_agent;
        // Creating a vector of headers and their data
        std::vector<std::string> headers = get_headers(request);
-       std::bool test = get_user_agent(headers, user_agent);
+       bool test = get_user_agent(headers, user_agent);
+       std::cout << "test = " << std::to_string(test) << std::endl;
 
        std::string response;
        if (path == "/") {
