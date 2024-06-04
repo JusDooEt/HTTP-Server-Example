@@ -137,8 +137,10 @@ int main(int argc, char** argv) {
                 http_response = "HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/plain\r\n";
                 http_response += "Content-Length: " + std::to_string(responsePath.length()) + "\r\n\r\n" + responsePath;
             }
-            http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n";
-            http_response += "Content-Length: " + std::to_string(responsePath.length()) + "\r\n\r\n" + responsePath;
+            else {
+                http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n";
+                http_response += "Content-Length: " + std::to_string(responsePath.length()) + "\r\n\r\n" + responsePath;
+            }
         }
         else if (request.path.substr(0, 7) == "/files/") {
             std::string fileName = request.path.substr(7);
