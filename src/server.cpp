@@ -11,7 +11,15 @@
 #include <vector>
 #include <sstream>
 
-
+std::vector<std::string> get_headers(const std::string& request, const std::string& header) {
+    std::vector<std::string> toks = split_message(request, "\r\n");
+    std::vector<std::string> path_toks = split_message(toks[1], " ");
+    for (const auto& header : toks)
+    {
+        cout << header << endl;
+    }
+    return path_toks;
+}
 std::vector<std::string> split_message(const std::string& message, const std::string& delim) {
     std::vector<std::string> toks;
     std::stringstream ss = std::stringstream{ message };
@@ -99,6 +107,9 @@ int main(int argc, char **argv) {
        }
        else if (split_paths[1] == "echo") {
            response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + std::to_string(split_paths[2].length()) + "\r\n\r\n" + split_paths[2];
+       }
+       else if (split_paths[1] == "user-agent") {
+
        }
        else {
            response = "HTTP/1.1 404 Not Found\r\n\r\n";
