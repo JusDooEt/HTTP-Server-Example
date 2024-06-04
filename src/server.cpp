@@ -31,7 +31,7 @@ std::string get_path(std::string request) {
 std::vector<std::string> get_headers(const std::string& request) {
     std::vector<std::string> headers;
     std::vector<std::string> toks = split_message(request, "\r\n");
-    std::cout << "\nHeaders:\n";
+    //std::cout << "\nHeaders:\n";
     for (int i = 1; *toks[i].begin() != 'A'; i++)
     {
         headers.push_back(toks[i]);
