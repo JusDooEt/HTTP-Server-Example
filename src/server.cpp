@@ -31,13 +31,26 @@ std::string get_path(std::string request) {
 std::vector<std::string> get_headers(const std::string& request) {
     std::vector<std::string> headers;
     std::vector<std::string> toks = split_message(request, "\r\n");
+    std::cout << "\nHeaders:\n";
     for (int i = 1; *toks[i].begin() != 'A'; i++)
     {
-        std::cout << "\nHeaders:\n";
         std::cout << toks[i] << std::endl;
         headers.push_back(toks[i]);
     }
     return headers;
+}
+
+bool get_user_agent(std::vector<std::string> headers, std::string& user_agent) {
+    std::string key = "User-Agent: ";
+    for (const auto& header : headers) {
+        if (header.substr(0, key.length()) == key)
+        {
+            user_agent = header.substr(key.length());
+            std::cout << "User-Agent: " << user_agent << std::endl;
+            return true;
+        }
+    }
+    return false;
 }
 
 int main(int argc, char **argv) {
@@ -105,7 +118,7 @@ int main(int argc, char **argv) {
        std::cout << "Request: " << request << std::endl;
        std::string path = get_path(request);
        std::vector<std::string> split_paths = split_message(path, "/");
-
+       std::string user_agent;
        // Creating a vector of headers and their data
        std::vector<std::string> headers = get_headers(request);
 
@@ -116,8 +129,8 @@ int main(int argc, char **argv) {
        else if (split_paths[1] == "echo") {
            response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + std::to_string(split_paths[2].length()) + "\r\n\r\n" + split_paths[2];
        }
-       else if (split_paths[1] == "user-agent") {
-
+       else if (get_user_agent(headers, user_agent) {
+           response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + std::to_string(user_agent.length()) + "\r\n\r\n" + user_agent;
        }
        else {
            response = "HTTP/1.1 404 Not Found\r\n\r\n";
