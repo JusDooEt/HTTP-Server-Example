@@ -160,7 +160,10 @@ int main(int argc, char** argv) {
         }
 
         send(client_fd, http_response.c_str(), http_response.size(), 0);
+        std::cout << "Reponse: " << http_response;
     }
+
+   
 
     close(server_fd);
     return 0;
