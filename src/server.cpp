@@ -16,7 +16,7 @@ std::vector<std::string> get_headers(const std::string& request, const std::stri
     std::vector<std::string> path_toks = split_message(toks[1], " ");
     for (const auto& header : toks)
     {
-        cout << header << endl;
+        cout << header << std::endl;
     }
     return path_toks;
 }
