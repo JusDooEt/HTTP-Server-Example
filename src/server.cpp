@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
        }
 
        std::cout << "Response: " << response << std::endl;
-       write(client_fd, response.c_str(), response.length());
+       send(client_fd, response.c_str(), response.length());
    }
 
    close(server_fd);
