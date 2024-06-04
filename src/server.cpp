@@ -1,4 +1,3 @@
-src / server.cpp
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <signal.h>
