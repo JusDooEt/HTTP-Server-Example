@@ -31,7 +31,7 @@ std::string get_path(std::string request) {
 std::vector<std::string> get_headers(const std::string& request) {
     std::vector<std::string> headers;
     std::vector<std::string> toks = split_message(request, "\r\n");
-    //std::cout << "\nHeaders:\n";
+    std::cout << "\nHeaders:\n";
     for (int i = 1; *toks[i].begin() != 'A'; i++)
     {
         headers.push_back(toks[i]);
@@ -42,15 +42,7 @@ std::vector<std::string> get_headers(const std::string& request) {
 
 bool get_user_agent(std::vector<std::string>& headers, std::string& user_agent) {
     std::string key = "User-Agent: ";
-    for (const std::string& header : headers) {
-        std::cout << "header " << header.substr(0, key.length()) << std::endl;
-        if (header.substr(0, key.length()) == key)
-        {
-            user_agent = header.substr(key.length());
-            std::cout << "User-Agent: " << user_agent << std::endl;
-            return true;
-        }
-    }
+    std::cout << "Headers Size = " << headers.size() << std::endl;
     return false;
 }
 
