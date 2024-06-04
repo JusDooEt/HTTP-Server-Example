@@ -28,10 +28,10 @@ std::string get_path(std::string request) {
     return path_toks[1];
 }
 
-std::vector<std::string> get_headers(const std::string& request, const std::string& header) {
+std::vector<std::string> get_headers(const std::string& request) {
     std::vector<std::string> toks = split_message(request, "\r\n");
     std::vector<std::string> path_toks = split_message(toks[1], " ");
-    for (const auto& header : toks)
+    for (const auto& header : path_toks)
     {
         std::cout << "\nHeaders:\n";
         std::cout << header << std::endl;
@@ -104,6 +104,10 @@ int main(int argc, char **argv) {
        std::cout << "Request: " << request << std::endl;
        std::string path = get_path(request);
        std::vector<std::string> split_paths = split_message(path, "/");
+
+       // Creating a vector of headers and their data
+       std::vector<std::string> split_paths = get_headers(request);
+
        std::string response;
        if (path == "/") {
            response = "HTTP/1.1 200 OK\r\n\r\n";
