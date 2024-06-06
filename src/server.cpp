@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include <fstream>
 #include <filesystem>
-#include <zlib.h>
+#include <GZIP>
 
 #ifdef __WIN32__
 #include <winsock2.h>
