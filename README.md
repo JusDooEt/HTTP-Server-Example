@@ -9,8 +9,10 @@ that is capable of serving multiple clients.
 
 **Note**: If you're viewing this repo on GitHub, head over to
 [codecrafters.io](https://codecrafters.io) to try the challenge.
+
 # Newest Update
-This program will now determine if data needs to be encrypted via the gzip encoding method when a 'GET /echo/' request is sent. It will encrypt the data using the zlib library function and constants, and send back an appropriate response with the gzip encrypted data.
+This program will now determine if data needs to be encrypted via the gzip encoding method when a 'GET /echo/' request is sent. It will encrypt the data using the zlib library function and constants, and send back an appropriate response with the gzip encrypted data in the response body.
+
 # About
 This project is a challenge that was provided by [codecrafters.io](https://app.codecrafters.io/catalog?_gl=1*kgzjyd*_ga*MTA2MzY1OTcyOS4xNzE3MTgwNTE5*_ga_N8D6K4M2HE*MTcxNzQ1Mzk2NS4yLjAuMTcxNzQ1Mzk2NS4wLjAuMA..) that challenges developers to create a HTTP server. The main challenge of this project was learning how HTTP messages are formatted and how to parse requests and responses to meet the format's requirements. In order to interpret a request, the message must be broken down into different strings representing a start line, HTTP headers, and a body if one is present. From there the start line will provide the main instructions of the request and the headers will provide specifications for the start line and the body if one is present. A response will be structured similarly but the start line will indicate a success or failure.
 
