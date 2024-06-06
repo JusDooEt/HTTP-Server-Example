@@ -191,16 +191,17 @@ std::vector<std::string> splitEncoding(const std::string& s, char delimiter) {
 
 
 
-std::string compress_string(const std::string& str, int compressionlevel = Z_BEST_COMPRESSION) {
+string gzip_compress(const string& data) {
     z_stream zs;
     memset(&zs, 0, sizeof(zs));
-    if (deflateInit2(&zs, compressionlevel, Z_DEFLATED, 31, 8, Z_DEFAULT_STRATEGY) != Z_OK)
-        throw(std::runtime_error("deflateInit failed while compressing."));
-    zs.next_in = (Bytef*)str.data();
-    zs.avail_in = str.size();
+    if (deflateInit2(&zs, Z_BEST_COMPRESSION, Z_DEFLATED, 15 + 16, 8, Z_DEFAULT_STRATEGY) != Z_OK) {
+        throw runtime_error("deflateInit2 failed while compressing.");
+    }
+    zs.next_in = (Bytef*)data.data();
+    zs.avail_in = data.size();
     int ret;
     char outbuffer[32768];
-    std::string outstring;
+    string outstring;
     do {
         zs.next_out = reinterpret_cast<Bytef*>(outbuffer);
         zs.avail_out = sizeof(outbuffer);
@@ -211,7 +212,7 @@ std::string compress_string(const std::string& str, int compressionlevel = Z_BES
     } while (ret == Z_OK);
     deflateEnd(&zs);
     if (ret != Z_STREAM_END) {
-        throw(std::runtime_error("Exception during zlib compression: " + std::to_string(ret)));
+        throw runtime_error("Exception during zlib compression: (" + to_string(ret) + ") " + zs.msg);
     }
     return outstring;
 }
@@ -238,7 +239,7 @@ std::optional<ServerResponse> provide_response(const ClientRequest& req, std::st
                 //std::cout << "Value: " << value << std::endl;
                 if (value == "gzip") {
                     resp.setHeader("Content-Encoding", "gzip");
-                    resp.setBody(compress_string(echo_arg));
+                    resp.setBody(gzip_compress(echo_arg));
                 }
             }
         }
