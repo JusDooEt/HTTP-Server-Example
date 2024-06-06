@@ -25,7 +25,6 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #endif
-using namespace std;
 
 const std::string STATUSLINE_OK{ "HTTP/1.1 200 OK" };
 const std::string STATUSLINE_NOT_FOUND{ "HTTP/1.1 404 Not Found" };
