@@ -193,7 +193,7 @@ std::vector<std::string> splitEncoding(const std::string& s, char delimiter) {
 std::string gzip_compress(const std::string& data) {
     z_stream zs;
     memset(&zs, 0, sizeof(zs));
-    if (deflateInit2_(&zs, Z_BEST_COMPRESSION, Z_DEFLATED, 15 + 16, 8, Z_DEFAULT_STRATEGY) != Z_OK) {
+    if (deflateInit2_(&zs, Z_BEST_COMPRESSION, Z_DEFLATED, 15, 16, 8, Z_DEFAULT_STRATEGY) != Z_OK) {
         throw std::runtime_error("deflateInit2 failed while compressing.");
     }
     zs.next_in = (Bytef*)data.data();
